@@ -1,3 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROHANA | Leather Lookbook</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { 
+            margin: 0; padding: 0; background: #000; 
+            font-family: 'Garamond', serif; color: #f4f1ea; 
+            height: 100vh; width: 100vw; overflow: hidden; 
+        }
+        
+        .slider-container {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            height: 100%; width: 100%; -webkit-overflow-scrolling: touch; scroll-behavior: smooth;
+        }
+        .slider-container::-webkit-scrollbar { display: none; }
+        
+        .page {
+            min-width: 100vw; height: 100vh; scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px; position: relative; flex-shrink: 0;
+        }
+
+        /* Container untuk Slider Foto di dalam satu produk */
+        .img-slider { 
+            width: 100%; height: 40%; display: flex; 
+            overflow-x: auto; scroll-snap-type: x mandatory; 
+            gap: 0; -webkit-overflow-scrolling: touch;
+            z-index: 10;
+            touch-action: pan-x; 
+        }
+        .img-slider::-webkit-scrollbar { display: none; }
+        
+        .product-photo { 
+            min-width: 100%; height: 100%; object-fit: contain; 
+            scroll-snap-align: center;
+            mix-blend-mode: lighten; filter: contrast(1.1) brightness(0.9); 
+            flex-shrink: 0;
+        }
+
+        .info { text-align: center; margin-top: 15px; max-width: 350px; }
+        .category-info { color: #d6b05e; font-size: 10px; letter-spacing: 3px; margin-bottom: 8px; text-transform: uppercase; font-weight: bold; }
+        .title { font-size: 26px; letter-spacing: 2px; margin: 5px 0; font-weight: 300; text-transform: uppercase; }
+        
+        .price-container { margin: 10px 0; }
+        .old-price { font-size: 12px; color: #666; text-decoration: line-through; margin-right: 8px; letter-spacing: 1px; }
+        .new-price { font-size: 18px; color: #d6b05e; font-weight: bold; letter-spacing: 1px; }
+
+        .size-info { 
+            font-size: 11px; color: #d6b05e; letter-spacing: 1px; 
+            margin: 10px 0 15px 0; display: inline-block; 
+            border: 1px solid rgba(214, 176, 94, 0.4); padding: 5px 15px;
+            background: rgba(214, 176, 94, 0.05);
+            text-transform: uppercase;
+        }
+        
+        .desc { font-size: 12px; color: #888; line-height: 1.6; margin-bottom: 20px; letter-spacing: 1px; }
+        
+        .btn-wa {
+            display: inline-block; padding: 14px 40px; border: 1px solid #d6b05e; 
+            color: #d6b05e; text-decoration: none; font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+        }
+
+        .swipe-hint { position: absolute; bottom: 30px; font-size: 8px; color: #444; letter-spacing: 5px; text-transform: uppercase; }
+        .divider-title { color: #d6b05e; letter-spacing: 10px; font-weight: 300; font-size: 28px; text-transform: uppercase; text-align: center; }
+        .divider-sub { color: #555; font-size: 9px; letter-spacing: 4px; margin-top: 5px; }
+        .detail-hint { font-size: 9px; color: #d6b05e; margin-bottom: 10px; letter-spacing: 2px; opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<div class="slider-container" id="mainSlider">
+    <div class="page">
+        <p style="color: #d6b05e; letter-spacing: 5px;">MEMUAT KOLEKSI...</p>
+    </div>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -16,56 +96,7 @@
   const db = getFirestore(app);
   const slider = document.getElementById('mainSlider');
 
-  function renderProducts(snapshot) {
-    let menProducts = [];
-    let womenProducts = [];
-
-    // Kelompokkan produk berdasarkan kategori
-    snapshot.forEach(doc => {
-      const data = { id: doc.id, ...doc.data() };
-      if (data.kategori === "WOMEN") {
-        womenProducts.push(data);
-      } else {
-        menProducts.push(data);
-      }
-    });
-
-    // 1. Halaman Awal (Cover)
-    let content = `
-    <div class="page">
-        <h1 style="color: #d6b05e; letter-spacing: 15px; font-weight: 300; font-size: 45px; margin: 0;">PROHANA</h1>
-        <p style="color: #666; font-size: 10px; letter-spacing: 6px; text-transform: uppercase; margin-top: 15px;">The Noble Essence of Leather</p>
-        <div style="width: 50px; height: 1px; background: #d6b05e; margin-top: 30px; opacity: 0.5;"></div>
-        <p class="swipe-hint">← SWIPE TO EXPLORE →</p>
-    </div>`;
-
-    // 2. Divider Koleksi Pria
-    if (menProducts.length > 0) {
-      content += `
-      <div class="page" style="background: #050505;">
-          <h2 style="color: #d6b05e; letter-spacing: 10px; font-weight: 300; font-size: 28px; text-transform: uppercase;">Men Collection</h2>
-          <p style="color: #555; font-size: 9px; letter-spacing: 4px;">THE GENTLEMEN SERIES</p>
-          <div style="width: 30px; height: 1px; background: #d6b05e; margin-top: 20px; opacity: 0.4;"></div>
-      </div>`;
-      
-      menProducts.forEach(p => { content += generateProductHTML(p); });
-    }
-
-    // 3. Divider Koleksi Wanita
-    if (womenProducts.length > 0) {
-      content += `
-      <div class="page" style="background: #050505;">
-          <h2 style="color: #d6b05e; letter-spacing: 10px; font-weight: 300; font-size: 28px; text-transform: uppercase;">Women Classy</h2>
-          <p style="color: #555; font-size: 9px; letter-spacing: 4px;">THE ELEGANT SOUL</p>
-          <div style="width: 30px; height: 1px; background: #d6b05e; margin-top: 20px; opacity: 0.4;"></div>
-      </div>`;
-
-      womenProducts.forEach(p => { content += generateProductHTML(p); });
-    }
-    
-    slider.innerHTML = content;
-  }
-
+  // Fungsi Helper untuk membuat tampilan per produk
   function generateProductHTML(p) {
     const album = p.album || [p.gambar || p.imageUrl || ""]; 
     const sizeText = p.ukuran || "Available Custom Size";
@@ -100,8 +131,58 @@
       </div>`;
   }
 
+  function renderProducts(snapshot) {
+    let menProducts = [];
+    let womenProducts = [];
+
+    snapshot.forEach(doc => {
+      const data = { id: doc.id, ...doc.data() };
+      if (data.kategori === "WOMEN") {
+        womenProducts.push(data);
+      } else {
+        menProducts.push(data);
+      }
+    });
+
+    // 1. Cover Depan
+    let content = `
+    <div class="page">
+        <h1 style="color: #d6b05e; letter-spacing: 15px; font-weight: 300; font-size: 45px; margin: 0;">PROHANA</h1>
+        <p style="color: #666; font-size: 10px; letter-spacing: 6px; text-transform: uppercase; margin-top: 15px;">The Noble Essence of Leather</p>
+        <div style="width: 50px; height: 1px; background: #d6b05e; margin-top: 30px; opacity: 0.5;"></div>
+        <p class="swipe-hint">← SWIPE TO EXPLORE →</p>
+    </div>`;
+
+    // 2. Koleksi Men
+    if (menProducts.length > 0) {
+      content += `
+      <div class="page" style="background: #050505;">
+          <h2 class="divider-title">Men Collection</h2>
+          <p class="divider-sub">THE GENTLEMEN SERIES</p>
+          <div style="width: 30px; height: 1px; background: #d6b05e; margin-top: 20px; opacity: 0.4;"></div>
+      </div>`;
+      menProducts.forEach(p => { content += generateProductHTML(p); });
+    }
+
+    // 3. Koleksi Women
+    if (womenProducts.length > 0) {
+      content += `
+      <div class="page" style="background: #050505;">
+          <h2 class="divider-title">Women Classy</h2>
+          <p class="divider-sub">THE ELEGANT SOUL</p>
+          <div style="width: 30px; height: 1px; background: #d6b05e; margin-top: 20px; opacity: 0.4;"></div>
+      </div>`;
+      womenProducts.forEach(p => { content += generateProductHTML(p); });
+    }
+    
+    slider.innerHTML = content;
+  }
+
   const q = query(collection(db, "produk_prohana"), orderBy("waktu", "desc"));
   onSnapshot(q, (snapshot) => {
     renderProducts(snapshot);
   });
 </script>
+
+</body>
+</html>
