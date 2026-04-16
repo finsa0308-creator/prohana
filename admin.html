@@ -8,10 +8,9 @@
         body { background: #111; color: #f4f1ea; font-family: 'Garamond', serif; padding: 20px; }
         .container { max-width: 600px; margin: auto; background: #000; padding: 30px; border: 1px solid #d6b05e; }
         h2 { color: #d6b05e; text-align: center; letter-spacing: 3px; }
-        label { font-size: 11px; color: #d6b05e; letter-spacing: 1px; text-transform: uppercase; display: block; margin-top: 10px; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 5px 0 15px 0; background: #222; border: 1px solid #444; color: #fff; border-radius: 0; font-family: inherit; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: #fff; border-radius: 0; }
         .price-group { display: flex; gap: 10px; }
-        button { width: 100%; padding: 15px; background: #d6b05e; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; color: #000; letter-spacing: 2px; text-transform: uppercase; }
+        button { width: 100%; padding: 15px; background: #d6b05e; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; color: #000; letter-spacing: 2px; }
         
         .preview-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 10px 0; }
         .preview-box { 
@@ -27,6 +26,9 @@
         .del-btn { background: #500; color: #fff; border: none; padding: 5px 10px; cursor: pointer; font-size: 10px; }
         .mode-indicator { text-align: center; font-size: 12px; color: #d6b05e; margin-bottom: 10px; display: none; font-weight: bold; }
         #status-msg { text-align: center; font-size: 12px; margin-top: 10px; color: #d6b05e; }
+        
+        /* Gaya untuk info ukuran otomatis */
+        .auto-size-info { font-size: 11px; color: #d6b05e; margin-bottom: 10px; letter-spacing: 1px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -36,30 +38,24 @@
     <div id="editMode" class="mode-indicator">SEDANG MENGEDIT PRODUK...</div>
     
     <input type="hidden" id="editId" value="">
+    <input type="text" id="pName" placeholder="Nama Sepatu (Contoh: The Commander)">
     
-    <label>Nama Sepatu</label>
-    <input type="text" id="pName" placeholder="Contoh: The Aurora Backless">
-    
-    <label>Harga (Normal & Sale)</label>
     <div class="price-group">
-        <input type="text" id="pPriceNormal" placeholder="Normal: 330.000">
-        <input type="text" id="pPriceSale" placeholder="Sale: 320.000">
+        <input type="text" id="pPriceNormal" placeholder="Harga Normal (Contoh: 330.000)">
+        <input type="text" id="pPriceSale" placeholder="Harga Sale (Contoh: 320.000)">
     </div>
 
-    <label>Kategori Koleksi</label>
-    <select id="pCat" onchange="updateSizeOptions()">
+    <label style="font-size: 12px; color: #d6b05e;">PILIH KATEGORI:</label>
+    <select id="pCat" onchange="updateAutoSize()">
         <option value="MEN">MEN (Koleksi Pria)</option>
-        <option value="WOMEN">WOMEN (Women Classy)</option>
+        <option value="WOMEN">WOMEN (Koleksi Wanita)</option>
     </select>
     
-    <label>Rentang Ukuran</label>
-    <select id="pSize">
-        </select>
+    <div id="sizeDisplay" class="auto-size-info">Size otomatis: 38 - 45 | Available Custom Size</div>
     
-    <label>Deskripsi (Gunakan 3 Kata Elegan)</label>
-    <textarea id="pDesc" placeholder="Contoh: Timeless. Elegant. Authentic."></textarea>
+    <textarea id="pDesc" placeholder="Deskripsi Pendek (3 Kata Elegat)"></textarea>
     
-    <label>Link Foto (Maksimal 5)</label>
+    <h4 style="color:#d6b05e; margin-bottom: 5px; font-size: 12px;">LINK FOTO (MAKS. 5):</h4>
     <input type="text" class="pImgInput" placeholder="Link Foto 1 (Utama)" oninput="updatePreviews()">
     <input type="text" class="pImgInput" placeholder="Link Foto 2" oninput="updatePreviews()">
     <input type="text" class="pImgInput" placeholder="Link Foto 3" oninput="updatePreviews()">
@@ -79,7 +75,7 @@
     <p id="status-msg"></p>
 
     <div id="productList" style="margin-top: 30px;">
-        <h3 style="color:#d6b05e; border-bottom: 1px solid #d6b05e; padding-bottom: 10px; font-size: 16px;">DAFTAR PRODUK TERPASANG:</h3>
+        <h3 style="color:#d6b05e; border-bottom: 1px solid #d6b05e; padding-bottom: 10px;">Daftar Produk:</h3>
         <div id="listContent">Sedang memuat data...</div>
     </div>
 </div>
@@ -102,21 +98,15 @@
   const db = getFirestore(app);
   const colRef = collection(db, "produk_prohana");
 
-  // Update opsi size berdasarkan kategori
-  window.updateSizeOptions = function() {
-    const cat = document.getElementById('pCat').value;
-    const sizeSelect = document.getElementById('pSize');
-    if (cat === "WOMEN") {
-        sizeSelect.innerHTML = `
-            <option value="36 - 40 | Available Custom Size">36 - 40 | Available Custom Size</option>
-            <option value="Custom Size Only">Custom Size Only</option>
-        `;
-    } else {
-        sizeSelect.innerHTML = `
-            <option value="38 - 45 | Available Custom Size">38 - 45 | Available Custom Size</option>
-            <option value="Custom Size Only">Custom Size Only</option>
-        `;
-    }
+  // Fungsi untuk update info ukuran otomatis di layar
+  window.updateAutoSize = function() {
+      const cat = document.getElementById('pCat').value;
+      const display = document.getElementById('sizeDisplay');
+      if(cat === "MEN") {
+          display.innerText = "Size otomatis: 38 - 45 | Available Custom Size";
+      } else {
+          display.innerText = "Size otomatis: 36 - 40 | Available Custom Size";
+      }
   }
 
   window.updatePreviews = function() {
@@ -144,20 +134,25 @@
     snapshot.forEach((doc) => {
       const p = doc.data();
       const id = doc.id;
+      
       const item = document.createElement('div');
       item.className = 'product-item';
-      item.innerHTML = `<span><b>[${p.kategori}]</b> ${p.nama}</span>`;
+      item.innerHTML = `<span><b>${p.nama}</b> (${p.kategori})</span>`;
       
       const btnWrap = document.createElement('div');
+      
       const btnEdit = document.createElement('button');
-      btnEdit.className = 'edit-btn'; btnEdit.innerText = 'EDIT';
+      btnEdit.className = 'edit-btn';
+      btnEdit.innerText = 'EDIT';
       btnEdit.onclick = () => prepareEdit(id, p);
 
       const btnDel = document.createElement('button');
-      btnDel.className = 'del-btn'; btnDel.innerText = 'HAPUS';
+      btnDel.className = 'del-btn';
+      btnDel.innerText = 'HAPUS';
       btnDel.onclick = () => handleDelete(id);
 
-      btnWrap.appendChild(btnEdit); btnWrap.appendChild(btnDel);
+      btnWrap.appendChild(btnEdit);
+      btnWrap.appendChild(btnDel);
       item.appendChild(btnWrap);
       list.appendChild(item);
     });
@@ -165,4 +160,90 @@
 
   window.saveProduct = async function() {
     const name = document.getElementById('pName').value;
-    const priceNormal = document.getElementById('pPriceNormal').
+    const priceNormal = document.getElementById('pPriceNormal').value;
+    const priceSale = document.getElementById('pPriceSale').value;
+    const cat = document.getElementById('pCat').value;
+    const desc = document.getElementById('pDesc').value;
+    const editId = document.getElementById('editId').value;
+    const msg = document.getElementById('status-msg');
+
+    // Logika Penentuan Size Otomatis
+    const autoSize = (cat === "MEN") ? "38 - 45 | Available Custom Size" : "36 - 40 | Available Custom Size";
+
+    const imgInputs = document.querySelectorAll('.pImgInput');
+    const imagesArray = Array.from(imgInputs).map(i => i.value).filter(val => val !== "");
+
+    if(!name || imagesArray.length === 0) return alert("Nama dan minimal 1 Foto harus diisi!");
+    msg.innerText = "Memproses...";
+
+    try {
+      const productData = {
+        nama: name,
+        hargaNormal: priceNormal,
+        hargaSale: priceSale,
+        kategori: cat,
+        ukuran: autoSize, // Tersimpan otomatis sesuai kategori
+        deskripsi: desc, 
+        gambar: imagesArray[0],
+        album: imagesArray
+      };
+
+      if(editId === "") {
+        productData.waktu = serverTimestamp();
+        await addDoc(colRef, productData);
+        msg.innerText = "Produk berhasil ditambah!";
+      } else {
+        await updateDoc(doc(db, "produk_prohana", editId), productData);
+        msg.innerText = "Produk diperbarui!";
+      }
+      resetForm();
+    } catch (e) {
+      msg.innerText = "Terjadi kesalahan.";
+    }
+  }
+
+  window.handleDelete = async function(id) {
+    if(confirm("Hapus produk ini?")) await deleteDoc(doc(db, "produk_prohana", id));
+  }
+
+  window.prepareEdit = function(id, data) {
+    document.getElementById('pName').value = data.nama || '';
+    document.getElementById('pPriceNormal').value = data.hargaNormal || '';
+    document.getElementById('pPriceSale').value = data.hargaSale || '';
+    document.getElementById('pCat').value = data.kategori || 'MEN';
+    document.getElementById('pDesc').value = data.deskripsi || '';
+    document.getElementById('editId').value = id;
+
+    const imgInputs = document.querySelectorAll('.pImgInput');
+    const album = data.album || [data.gambar];
+    
+    imgInputs.forEach((input, index) => {
+        input.value = album[index] || '';
+    });
+
+    updateAutoSize();
+    updatePreviews();
+    document.getElementById('mainBtn').innerText = "SIMPAN PERUBAHAN";
+    document.getElementById('editMode').style.display = "block";
+    document.getElementById('cancelBtn').style.display = "block";
+    window.scrollTo(0,0);
+  }
+
+  window.resetForm = function() {
+    document.getElementById('pName').value = '';
+    document.getElementById('pPriceNormal').value = '';
+    document.getElementById('pPriceSale').value = '';
+    document.getElementById('pDesc').value = '';
+    document.querySelectorAll('.pImgInput').forEach(i => i.value = '');
+    document.getElementById('editId').value = '';
+    updateAutoSize();
+    updatePreviews();
+    document.getElementById('mainBtn').innerText = "TAMBAHKAN PRODUK";
+    document.getElementById('editMode').style.display = "none";
+    document.getElementById('cancelBtn').style.display = "none";
+    document.getElementById('status-msg').innerText = "";
+  }
+</script>
+
+</body>
+</html>
